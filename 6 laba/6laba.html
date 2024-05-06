@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>To-Do List</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<h1>To-Do List</h1>
+<input type="text" id="newItem">
+<button onclick="addItem()">Add</button>
+<div id="todoList"></div>
+<div>
+    <a href="#" onclick="setFilter('all')">All</a>
+    <a href="#" onclick="setFilter('completed')">Сделано</a>
+    <a href="#" onclick="setFilter('uncompleted')">Не сделано</a>
+</div>
+<script>
+let todoItems = [];
+const todoStorage = {
+    get: function() {
+        let data = localStorage.getItem('todoItems');
+        if (data) {
+            todoItems = JSON.parse(data);
+        }
+        renderTodoList();
+    },
+    set: function() {
+        localStorage.setItem('todoItems', JSON.stringify(todoItems));
+    }
+};
+
+function addItem() {
+    let newItem = document.getElementById('newItem').value;
+    if (newItem !== '') {
+        todoItems.push({text: newItem, completed: false});
+        todoStorage.set();
+        renderTodoList();
+        document.getElementById('newItem').value = '';
+    }
+}
+
+function toggleCompleted(index) {
+    todoItems[index].completed = !todoItems[index].completed;
+    todoStorage.set();
+    renderTodoList();
+}
+
+function setFilter(filter) {
+    renderTodoList(filter);
+}
+
+function renderTodoList(filter = 'all') {
+    let todoList = document.getElementById('todoList');
+    todoList.innerHTML = '';
+    todoItems.filter(item => {
+        if (filter === 'completed' && !item.completed) {
+            return false;
+        }
+        if (filter === 'uncompleted' && item.completed) {
+            return false;
+        }
+        return true;
+    }).forEach((item, index) => {
+        let todoDiv = document.createElement('div');
+        let todoText = document.createTextNode(item.text);
+        let toggleButton = document.createElement('button');
+        toggleButton.innerHTML = item.completed ? 'Undo' : 'Done';
+        toggleButton.onclick = () => toggleCompleted(index);
+        if (item.completed) {
+            todoDiv.classList.add('completed');
+        }
+        todoDiv.appendChild(todoText);
+        todoDiv.appendChild(toggleButton);
+        todoList.appendChild(todoDiv);
+    });
+}
+
+todoStorage.get();
+</script>
+</body>
+</html>
+
+
+
